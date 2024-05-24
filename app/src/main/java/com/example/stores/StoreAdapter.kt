@@ -28,24 +28,58 @@ class StoreAdapter (private var stores: MutableList<StoreEntity>, private var li
         with(holder){
             setListener(store)
 
-            bindView.tvName.text = store.name
+            binding.tvName.text = store.name
+            binding.cbFavorite.isChecked = store.isaFavorite
         }
     }
 
     override fun getItemCount(): Int = stores.size
+
+
+    fun setStores(stores: MutableList<StoreEntity>) {
+        //sustituimos el arreglo
+        this.stores = stores
+        notifyDataSetChanged()
+    }
+
     fun add(storeEntity: StoreEntity) {
         stores.add(storeEntity)
         notifyDataSetChanged()//REFRESCA LA VISTA DEL ADAPTADOR PARA VISUALIZAR ELEMENTO AGREGADO
     }
 
+    fun update(storeEntity: StoreEntity) {
+        //averiguar index de la store
+        val index =  stores.indexOf(storeEntity)
+        if (index != -1) {
+            stores.set(index, storeEntity)
+            notifyItemChanged(index)
+        }
+    }
+    fun delete(storeEntity: StoreEntity) {
+        //averiguar index de la store
+        val index =  stores.indexOf(storeEntity)
+        if (index != -1) {
+            stores.removeAt(index)
+            notifyItemRemoved(index)
+        }
+    }
+
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view){
-        val bindView = ItemStoreBinding.bind(view) //vinculacion del item_store con StoreAdapter
+        val binding = ItemStoreBinding.bind(view) //vinculacion del item_store con StoreAdapter
 
         //litenner para vincular ViewHolder con los eventos de cada componente
         fun setListener(storeEntity: StoreEntity){
-            bindView.root.setOnClickListener {
-                listener.onClick(storeEntity)
+            with(binding.root) {
+                setOnClickListener {listener.onClick(storeEntity)}
+
+                setOnLongClickListener {
+                    listener.onDeleteStore(storeEntity)
+                    true
+                }
+            }
+            binding.cbFavorite.setOnClickListener {
+                listener.onFavoriteStore(storeEntity)
             }
         }
     }
