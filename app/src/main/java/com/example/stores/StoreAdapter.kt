@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.stores.databinding.ItemStoreBinding
 
-class StoreAdapter (private var store: MutableList<Store>, private var listener: OnClickListener) :
+class StoreAdapter (private var stores: MutableList<Store>, private var listener: OnClickListener) :
     RecyclerView.Adapter<StoreAdapter.ViewHolder>()
 {
         private lateinit var mContext: Context //m SER REFIERE A QUE ES MIEMBRO DE LA CLASE, ESTANDAR BPRACT
@@ -23,7 +23,7 @@ class StoreAdapter (private var store: MutableList<Store>, private var listener:
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val store = store.get(position)
+        val store = stores.get(position)
 
         with(holder){
             setListener(store)
@@ -32,7 +32,12 @@ class StoreAdapter (private var store: MutableList<Store>, private var listener:
         }
     }
 
-    override fun getItemCount(): Int = store.size
+    override fun getItemCount(): Int = stores.size
+    fun add(store: Store) {
+        stores.add(store)
+        notifyDataSetChanged()//REFRESCA LA VISTA DEL ADAPTADOR PARA VISUALIZAR ELEMENTO AGREGADO
+    }
+
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view){
         val bindView = ItemStoreBinding.bind(view) //vinculacion del item_store con StoreAdapter
