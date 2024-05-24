@@ -7,7 +7,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.stores.databinding.ActivityMainBinding
 import java.util.concurrent.LinkedBlockingQueue
-import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity(), OnClickListener {
 
