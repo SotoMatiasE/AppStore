@@ -20,8 +20,8 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         setContentView(mbinding.root)
 
         mbinding.btnSave.setOnClickListener {
-            val store = Store(name = mbinding.edName.text.toString().trim())
-            mAdapter.add(store)
+            val storeEntity = StoreEntity(name = mbinding.edName.text.toString().trim())
+            mAdapter.add(storeEntity)
         }
 
         setupRecyclerView()
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     /*
     * OnClickListener llamamos al obj con su funcion
     * */
-    override fun onClick(store: Store) {
+    override fun onClick(storeEntity: StoreEntity) {
 
     }
 }
