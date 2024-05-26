@@ -3,14 +3,13 @@ package com.example.stores
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.stores.databinding.ActivityMainBinding
 import java.util.concurrent.LinkedBlockingQueue
 
-class MainActivity : AppCompatActivity(), OnClickListener {
+class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
 
-    private lateinit var mbinding: ActivityMainBinding
+    private lateinit var mBinding: ActivityMainBinding
     private lateinit var mAdapter: StoreAdapter
     private lateinit var mGridLayout: GridLayoutManager
 
@@ -18,13 +17,11 @@ class MainActivity : AppCompatActivity(), OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        mbinding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(mbinding.root)
+        mBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(mBinding.root)
 
-        val toolbar: Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
 
-        mbinding.btnSave.setOnClickListener {
+        /*mbinding.btnSave.setOnClickListener {
             val store = StoreEntity(name = mbinding.edName.text.toString().trim())
 
             Thread{ //esto hace que corra en otro hilo/segundo plano
@@ -32,9 +29,29 @@ class MainActivity : AppCompatActivity(), OnClickListener {
             }.start()
 
             mAdapter.add(store)
+        }*/
+
+        mBinding.fab.setOnClickListener {
+            launchEditFragment()
         }
 
         setupRecyclerView()
+    }
+
+    private fun launchEditFragment() {
+        //instancia del fragment
+            val fragment = EditStoreFragment()
+        //gestor de que trea para controlar fragment
+            val fragmentManager = supportFragmentManager
+            val fragmentTransaction = fragmentManager.beginTransaction()
+            fragmentTransaction.add(R.id.ContainerMain, fragment) //ContainerMain es el activitymain
+            fragmentTransaction.commit()//se aplican los cambios 
+            fragmentTransaction.addToBackStack(null)//podemos volver a la mainActivity
+        //decide como ejecutarse
+
+        //mBinding.fab.hide()
+
+        hideFab()
     }
 
 
@@ -45,11 +62,10 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         //pide el contexto donde crearse y la cantidad de columnas
         mGridLayout = GridLayoutManager(this, 2)
 
-
         getStores()
 
         //Configuracion del RECYCLERVIEW
-        mbinding.recyclerView.apply {
+        mBinding.recyclerView.apply {
             setHasFixedSize(true)
             layoutManager = mGridLayout
             adapter = mAdapter
@@ -93,4 +109,31 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         }.start()
         mAdapter.delete(queue.take())
     }
+
+    /*MainAux*/
+    override fun hideFab(isVisible: Boolean) {
+        if (isVisible)  {
+            mBinding.fab.show()
+        }else{
+            mBinding.fab.hide()
+        }
+    }
+
+    override fun addStore(storeEntity: StoreEntity) {
+        mAdapter.add(storeEntity)
+    }
+
+    override fun updateStore(storeEntity: StoreEntity) {
+
+    }
 }
+
+
+
+
+
+
+
+
+
+

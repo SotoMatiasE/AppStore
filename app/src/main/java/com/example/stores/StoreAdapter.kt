@@ -43,8 +43,10 @@ class StoreAdapter (private var stores: MutableList<StoreEntity>, private var li
     }
 
     fun add(storeEntity: StoreEntity) {
-        stores.add(storeEntity)
-        notifyDataSetChanged()//REFRESCA LA VISTA DEL ADAPTADOR PARA VISUALIZAR ELEMENTO AGREGADO
+        if (!stores.contains(storeEntity)) {
+            stores.add(storeEntity)
+            notifyItemInserted(stores.size-1)//REFRESCA LA VISTA DEL ADAPTADOR PARA VISUALIZAR ELEMENTO AGREGADO
+        }
     }
 
     fun update(storeEntity: StoreEntity) {
@@ -62,8 +64,8 @@ class StoreAdapter (private var stores: MutableList<StoreEntity>, private var li
             stores.removeAt(index)
             notifyItemRemoved(index)
         }
-    }
 
+    }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view){
         val binding = ItemStoreBinding.bind(view) //vinculacion del item_store con StoreAdapter

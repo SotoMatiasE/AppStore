@@ -11,4 +11,7 @@
     <string name="hint_phone">Telefono</string>
     <string name="hint_website">Url del sitio</string>
     <string name="hint_photo_url">Url de la imagen</string>
+    <string name="edit_store_title_add">Crear Tienda</string>
+    <string name="menu_save">Save</string>
+    <string name="edit_store_message_sucsess">Tienda agregada</string>
 </resources>
