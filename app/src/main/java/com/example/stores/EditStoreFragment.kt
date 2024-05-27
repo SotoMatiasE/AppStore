@@ -20,6 +20,7 @@ import java.util.concurrent.LinkedBlockingQueue
 class EditStoreFragment : Fragment() {
     private lateinit var mBinding: FragmentEditStoreBinding
     private var mActivity: MainActivity? = null
+    private var mStoreEntity: StoreEntity? = null
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View?
@@ -67,9 +68,9 @@ class EditStoreFragment : Fragment() {
                 val store = StoreEntity(
                     name = mBinding.edName.text.toString().trim(),
                     phone = mBinding.edPhone.text.toString().trim(),
-                    webSite = mBinding.edWebSite.text.toString().trim()
+                    webSite = mBinding.edWebSite.text.toString().trim(),
+                    photoUrl = mBinding.edPhotoUrl.text.toString().trim(),
                 )
-
                 val queue = LinkedBlockingQueue<Long?>()
                 Thread {
                     val id = StoreApplication.database.storeDao().addStore(store)
