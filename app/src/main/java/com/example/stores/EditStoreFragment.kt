@@ -2,6 +2,7 @@ package com.example.stores
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
@@ -15,7 +16,9 @@ import androidx.core.widget.addTextChangedListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.stores.databinding.FragmentEditStoreBinding
-import java.util.concurrent.LinkedBlockingDeque
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import java.util.concurrent.LinkedBlockingQueue
 
 class EditStoreFragment : Fragment() {
@@ -40,7 +43,9 @@ class EditStoreFragment : Fragment() {
             mIsEditMode = true
             getStore(id)
         }else {
-            Toast.makeText(activity, id.toString(), Toast.LENGTH_SHORT).show()
+            mIsEditMode = false
+            //uso de alta
+            mStoreEntity = StoreEntity(name = "", phone = "", photoUrl = "") //inicializado
         }
 
         //conseguir la actividad del fragment y casterarla como MainActivity
@@ -61,6 +66,8 @@ class EditStoreFragment : Fragment() {
                 .centerCrop()
                 .into(mBinding.imgPhoto)
         }
+        //validar textField en tiempo real
+        mBinding.edName.addTextChangedListener { validateFields(mBinding.tilName) }
     }
 
     private fun getStore(id: Long) {
@@ -73,18 +80,17 @@ class EditStoreFragment : Fragment() {
     }
 
     private fun setUiStore(storeEntity: StoreEntity) {
+        //asigna valor editable con extenciones
         with(mBinding){
-            edName.setText(storeEntity.name)
-            edPhone.setText(storeEntity.phone)
-            edWebSite.setText(storeEntity.webSite)
-            edPhotoUrl.setText(storeEntity.photoUrl)
-            Glide.with(activity!!)
-                .load(storeEntity.photoUrl)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .centerCrop()
-                .into(imgPhoto)
+            edName.text = storeEntity.name.editable()
+            edPhone.text = storeEntity.phone.editable()
+            edWebSite.text = storeEntity.webSite.editable()
+            edPhotoUrl.text = storeEntity.photoUrl.editable()
         }
     }
+
+    //funcion de alcance
+    private fun String.editable(): Editable = Editable.Factory.getInstance().newEditable(this)
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_save, menu)
@@ -99,27 +105,37 @@ class EditStoreFragment : Fragment() {
                 true
             }
             R.id.action_save -> {
-                val store = StoreEntity(
+                if (mStoreEntity != null && validateFields(mBinding.tilPhotoUrl, mBinding.tilPhone,
+                                                            mBinding.tilName)){
+                    /*val store = StoreEntity(
                     name = mBinding.edName.text.toString().trim(),
                     phone = mBinding.edPhone.text.toString().trim(),
                     webSite = mBinding.edWebSite.text.toString().trim(),
-                    photoUrl = mBinding.edPhotoUrl.text.toString().trim(),
-                )
-                val queue = LinkedBlockingQueue<Long?>()
-                Thread {
-                    val id = StoreApplication.database.storeDao().addStore(store)
-                    queue.add(id)
-                    mActivity?.addStore(store)
-                    hideKeyboard()
-                }.start()
+                    photoUrl = mBinding.edPhotoUrl.text.toString().trim(),)*/
+                    //asi la variable global funciona en caso de edicion o carga
+                    with(mStoreEntity!!){
+                        name = mBinding.edName.text.toString().trim()
+                        phone = mBinding.edPhone.text.toString().trim()
+                        webSite = mBinding.edWebSite.text.toString().trim()
+                        photoUrl = mBinding.edPhotoUrl.text.toString().trim()
+                    }
+                    val queue = LinkedBlockingQueue<StoreEntity>()
+                    Thread {
+                        if (mIsEditMode) StoreApplication.database.storeDao().updateStore(mStoreEntity!!)
+                        else mStoreEntity!!.id = StoreApplication.database.storeDao().addStore(mStoreEntity!!)
+                        queue.add(mStoreEntity)
+                    }.start()
 
-                queue.take()?.let {
-                    Toast.makeText(
-                        mActivity,
-                        R.string.edit_store_message_sucsess,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    mActivity?.onBackPressedDispatcher?.onBackPressed()
+                    with(queue.take()){
+                        mActivity?.addStore(this)
+
+                        hideKeyboard()
+
+                        Snackbar.make(mBinding.root, R.string.edit_store_message_save_success,
+                            Snackbar.LENGTH_SHORT).show()
+
+                        mActivity?.onBackPressedDispatcher?.onBackPressed()
+                    }
                 }
                 true
             }
@@ -127,6 +143,46 @@ class EditStoreFragment : Fragment() {
                 return super.onOptionsItemSelected(item)
             }
         }
+    }
+
+    private fun validateFields(vararg  textFields: TextInputLayout) : Boolean {
+        var isValid = true
+
+        for (textField in textFields) {
+            if (textField.editText?.text.toString().trim().isEmpty()){
+                textField.error = getString(R.string.helper_required)
+                isValid = false
+            }else textField.error = null //se limpian en tiempo real los errores
+        }
+
+        if (!isValid) Snackbar.make(mBinding.root, R.string.edit_store_message_valid,
+                                                        Snackbar.LENGTH_SHORT).show()
+
+        return isValid
+    }
+
+    private fun validateFields(): Boolean {
+        //validamos campos requeridos
+        var isValid = true
+        //el primero obtiene el foco
+        //validacion campo faltante marca error
+        if (mBinding.edPhotoUrl.text.toString().trim().isEmpty()){
+            mBinding.tilPhotoUrl.error = getString(R.string.helper_required)
+            mBinding.edPhotoUrl.requestFocus() //solisita el foco
+            isValid = false
+        }
+        if (mBinding.edPhone.text.toString().trim().isEmpty()){
+            mBinding.tilPhone.error = getString(R.string.helper_required)
+            mBinding.edPhone.requestFocus() //solisita el foco
+            isValid = false
+        }
+        if (mBinding.edName.text.toString().trim().isEmpty()){
+            mBinding.tilName.error = getString(R.string.helper_required)
+            mBinding.edName.requestFocus() //solisita el foco
+            isValid = false
+        }
+
+        return isValid
     }
 
     private fun hideKeyboard() {

@@ -34,20 +34,17 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
 
         setupRecyclerView()
     }
-
     private fun launchEditFragment(args: Bundle? = null) {
         //instancia del fragment
-            val fragment = EditStoreFragment()
-
+        val fragment = EditStoreFragment()
         if (args != null) fragment.arguments = args
-
         //gestor de que trea para controlar fragment
-            val fragmentManager = supportFragmentManager
-            val fragmentTransaction = fragmentManager.beginTransaction()
-            fragmentTransaction.add(R.id.ContainerMain, fragment) //ContainerMain es el activitymain
-            fragmentTransaction.commit()//se aplican los cambios 
-            fragmentTransaction.addToBackStack(null)//podemos volver a la mainActivity
-        //decide como ejecutarse
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+
+        fragmentTransaction.add(R.id.ContainerMain, fragment)
+        fragmentTransaction.addToBackStack(null)
+        fragmentTransaction.commit()
 
         hideFab()
     }

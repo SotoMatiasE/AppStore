@@ -15,4 +15,6 @@
     <string name="menu_save">Save</string>
     <string name="edit_store_message_sucsess">Tienda agregada</string>
     <string name="arg_id">key_id</string>
+    <string name="edit_store_message_save_success">Guardado exitosamente</string>
+    <string name="edit_store_message_valid">Revise los campos requeridos</string>
 </resources>
