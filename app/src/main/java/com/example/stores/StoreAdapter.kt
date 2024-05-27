@@ -31,7 +31,7 @@ class StoreAdapter (private var stores: MutableList<StoreEntity>, private var li
             binding.tvName.text = store.name
             binding.cbFavorite.isChecked = store.isaFavorite
 
-            //actualiza imagen en tiempo real del recyclerview
+
             Glide.with(mContext)
                 .load(store.photoUrl)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -79,7 +79,7 @@ class StoreAdapter (private var stores: MutableList<StoreEntity>, private var li
         //litenner para vincular ViewHolder con los eventos de cada componente
         fun setListener(storeEntity: StoreEntity){
             with(binding.root) {
-                setOnClickListener {listener.onClick(storeEntity)}
+                setOnClickListener {listener.onClick(storeEntity.id)}
 
                 setOnLongClickListener {
                     listener.onDeleteStore(storeEntity)
