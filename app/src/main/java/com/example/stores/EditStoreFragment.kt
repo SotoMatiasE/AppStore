@@ -48,26 +48,52 @@ class EditStoreFragment : Fragment() {
             mStoreEntity = StoreEntity(name = "", phone = "", photoUrl = "") //inicializado
         }
 
+        setUpActionBar()
+
+        //Configuracion de GLIDE para imagenes con url
+        setUpTextFields()
+    }
+
+
+    private fun setUpActionBar() {
+        mActivity = activity as? MainActivity
+        mActivity?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        mActivity?.supportActionBar?.title =
+            if (mIsEditMode) getString(R.string.edit_store_title_edit) else getString(R.string.edit_store_title_add)
+        setHasOptionsMenu(true)
+    }
+
+ /*   private fun setUpActionBar() {
         //conseguir la actividad del fragment y casterarla como MainActivity
         mActivity = activity as? MainActivity
         //indicar flecha de restroseso
         mActivity?.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         //configurar nombre de la action bar
-        mActivity?.supportActionBar?.title = getString(R.string.edit_store_title_add)
+        mActivity?.supportActionBar?.title = if (mIsEditMode)getString(R.string.edit_store_title_edit)
+                                            else getString(R.string.edit_store_title_add)
 
         //acceso al menu
         setHasOptionsMenu(true)
-
-        //Configuracion de GLIDE para imagenes con url
-        mBinding.edPhotoUrl.addTextChangedListener {
-            Glide.with(this)
-                .load(mBinding.edPhotoUrl.text.toString())
-                .diskCacheStrategy(DiskCacheStrategy.ALL) //config cache
-                .centerCrop()
-                .into(mBinding.imgPhoto)
+    }
+*/
+    private fun setUpTextFields() {
+        with (mBinding){
+        //validar textField en tiempo real quita el error de valores no ingresados
+        edName.addTextChangedListener { validateFields(tilName) }
+        edPhone.addTextChangedListener { validateFields(tilPhone) }
+        edPhotoUrl.addTextChangedListener {
+            validateFields(tilPhotoUrl)
+            loadImage(it.toString().trim())
+            }
         }
-        //validar textField en tiempo real
-        mBinding.edName.addTextChangedListener { validateFields(mBinding.tilName) }
+    }
+
+    private fun loadImage(url: String) {
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL) //config cache
+            .centerCrop()
+            .into(mBinding.imgPhoto)
     }
 
     private fun getStore(id: Long) {
@@ -98,27 +124,27 @@ class EditStoreFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId){
-            //accedemos a setDisplayHomeAsUpEnabled
+        /*val store = StoreEntity(
+        name = mBinding.edName.text.toString().trim(),
+        phone = mBinding.edPhone.text.toString().trim(),
+        webSite = mBinding.edWebSite.text.toString().trim(),
+        photoUrl = mBinding.edPhotoUrl.text.toString().trim(),)*/
+        //asi la variable global funciona en caso de edicion o carga
+        return when(item.itemId){
             android.R.id.home -> {
-                mActivity?.onBackPressedDispatcher?.onBackPressed()
+                requireActivity().onBackPressedDispatcher.onBackPressed()
                 true
             }
             R.id.action_save -> {
-                if (mStoreEntity != null && validateFields(mBinding.tilPhotoUrl, mBinding.tilPhone,
-                                                            mBinding.tilName)){
-                    /*val store = StoreEntity(
-                    name = mBinding.edName.text.toString().trim(),
-                    phone = mBinding.edPhone.text.toString().trim(),
-                    webSite = mBinding.edWebSite.text.toString().trim(),
-                    photoUrl = mBinding.edPhotoUrl.text.toString().trim(),)*/
-                    //asi la variable global funciona en caso de edicion o carga
-                    with(mStoreEntity!!){
+                if (mStoreEntity != null &&
+                    validateFields(mBinding.tilPhotoUrl, mBinding.tilPhone, mBinding.tilName)){
+                    with(mStoreEntity!!) {
                         name = mBinding.edName.text.toString().trim()
                         phone = mBinding.edPhone.text.toString().trim()
                         webSite = mBinding.edWebSite.text.toString().trim()
                         photoUrl = mBinding.edPhotoUrl.text.toString().trim()
                     }
+
                     val queue = LinkedBlockingQueue<StoreEntity>()
                     Thread {
                         if (mIsEditMode) StoreApplication.database.storeDao().updateStore(mStoreEntity!!)
@@ -126,22 +152,27 @@ class EditStoreFragment : Fragment() {
                         queue.add(mStoreEntity)
                     }.start()
 
-                    with(queue.take()){
-                        mActivity?.addStore(this)
-
+                    with(queue.take()) {
                         hideKeyboard()
 
-                        Snackbar.make(mBinding.root, R.string.edit_store_message_save_success,
-                            Snackbar.LENGTH_SHORT).show()
+                        if (mIsEditMode){
+                            mActivity?.updateStore(this)
 
-                        mActivity?.onBackPressedDispatcher?.onBackPressed()
+                            Snackbar.make(mBinding.root,
+                                R.string.edit_store_message_save_success,
+                                Snackbar.LENGTH_SHORT).show()
+                        } else {
+                            mActivity?.addStore(this)
+
+                            Toast.makeText(mActivity, R.string.edit_store_message_save_success, Toast.LENGTH_SHORT).show()
+
+                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                        }
                     }
                 }
                 true
             }
-            else -> {
-                return super.onOptionsItemSelected(item)
-            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

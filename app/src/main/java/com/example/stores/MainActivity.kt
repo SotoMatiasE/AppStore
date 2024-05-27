@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
             StoreApplication.database.storeDao().updateStore(storeEntity)
             queue.add(storeEntity)
         }.start()
-        mAdapter.update(queue.take())
+        updateStore(queue.take())
     }
 
     override fun onDeleteStore(storeEntity: StoreEntity) {

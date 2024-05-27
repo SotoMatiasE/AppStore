@@ -25,13 +25,10 @@ class StoreAdapter (private var stores: MutableList<StoreEntity>, private var li
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val store = stores.get(position)
 
-        with(holder){
+        with(holder) {
             setListener(store)
-
             binding.tvName.text = store.name
             binding.cbFavorite.isChecked = store.isaFavorite
-
-
             Glide.with(mContext)
                 .load(store.photoUrl)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -52,15 +49,14 @@ class StoreAdapter (private var stores: MutableList<StoreEntity>, private var li
     fun add(storeEntity: StoreEntity) {
         if (!stores.contains(storeEntity)) {
             stores.add(storeEntity)
-            notifyItemInserted(stores.size-1)//REFRESCA LA VISTA DEL ADAPTADOR PARA VISUALIZAR ELEMENTO AGREGADO
+            notifyItemInserted(stores.size -1)//REFRESCA LA VISTA DEL ADAPTADOR PARA VISUALIZAR ELEMENTO AGREGADO
         }
     }
 
     fun update(storeEntity: StoreEntity) {
-        //averiguar index de la store
-        val index =  stores.indexOf(storeEntity)
+        val index = stores.indexOf(storeEntity)
         if (index != -1) {
-            stores.set(index, storeEntity)
+            stores[index] = storeEntity
             notifyItemChanged(index)
         }
     }
