@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
 
-
         /*mbinding.btnSave.setOnClickListener {
             val store = StoreEntity(name = mbinding.edName.text.toString().trim())
 
@@ -31,9 +30,7 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
             mAdapter.add(store)
         }*/
 
-        mBinding.fab.setOnClickListener {
-            launchEditFragment()
-        }
+        mBinding.fab.setOnClickListener {launchEditFragment()}
 
         setupRecyclerView()
     }
@@ -73,8 +70,8 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
     }
 
     //mostrar todos los datos/stores
-    private fun getStores(){
-        val queue = LinkedBlockingQueue<MutableList<StoreEntity>>() //queue significa fila o cola
+    private fun getStores() {
+        val queue = LinkedBlockingQueue<MutableList<StoreEntity>>()
         Thread{
             val stores = StoreApplication.database.storeDao().getAllStores()
             queue.add(stores)
@@ -103,8 +100,10 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
     }
 
     override fun onDeleteStore(storeEntity: StoreEntity) {
+        //Elimina el item de recyclerview
         val queue = LinkedBlockingQueue<StoreEntity>()
-        Thread{
+        Thread {
+            StoreApplication.database.storeDao().deleteStore(storeEntity)
             queue.add(storeEntity)
         }.start()
         mAdapter.delete(queue.take())
@@ -112,11 +111,7 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
 
     /*MainAux*/
     override fun hideFab(isVisible: Boolean) {
-        if (isVisible)  {
-            mBinding.fab.show()
-        }else{
-            mBinding.fab.hide()
-        }
+        if (isVisible) mBinding.fab.show() else mBinding.fab.hide()
     }
 
     override fun addStore(storeEntity: StoreEntity) {
@@ -124,7 +119,7 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
     }
 
     override fun updateStore(storeEntity: StoreEntity) {
-
+        mAdapter.update(storeEntity)
     }
 }
 

@@ -55,11 +55,9 @@ dependencies {
 
     //Glide
     implementation ("com.github.bumptech.glide:glide:4.16.0")
-    ksp("com.github.bumptech.glide:ksp:4.16.0")
-    //annotationProcessor ("com.github.bumptech.glide:compiler:4.14.2")
+    ksp ("com.github.bumptech.glide:ksp:4.16.0")
 
-
-
+    //Room
     implementation("androidx.room:room-runtime:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 

@@ -10,8 +10,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
+import androidx.core.widget.addTextChangedListener
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.stores.databinding.FragmentEditStoreBinding
-import com.google.android.material.snackbar.Snackbar
 import java.util.concurrent.LinkedBlockingQueue
 
 class EditStoreFragment : Fragment() {
@@ -19,10 +22,8 @@ class EditStoreFragment : Fragment() {
     private var mActivity: MainActivity? = null
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
-                              savedInstanceState: Bundle?
-    ): View? {
-        mBinding = FragmentEditStoreBinding.inflate(inflater, container, false)
-
+                              savedInstanceState: Bundle?): View?
+    { mBinding = FragmentEditStoreBinding.inflate(inflater, container, false)
         return mBinding.root
     }
 
@@ -39,6 +40,15 @@ class EditStoreFragment : Fragment() {
 
         //acceso al menu
         setHasOptionsMenu(true)
+
+        //Configuracion de GLIDE para imagenes con url
+        mBinding.edPhotoUrl.addTextChangedListener {
+            Glide.with(this)
+                .load(mBinding.edPhotoUrl.text.toString())
+                .diskCacheStrategy(DiskCacheStrategy.ALL) //config cache
+                .centerCrop()
+                .into(mBinding.imgPhoto)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -57,20 +67,23 @@ class EditStoreFragment : Fragment() {
                 val store = StoreEntity(
                     name = mBinding.edName.text.toString().trim(),
                     phone = mBinding.edPhone.text.toString().trim(),
-                    webSite = mBinding.edWebSite.text.toString().trim())
+                    webSite = mBinding.edWebSite.text.toString().trim()
+                )
 
                 val queue = LinkedBlockingQueue<Long?>()
-                Thread{
+                Thread {
                     val id = StoreApplication.database.storeDao().addStore(store)
                     queue.add(id)
                     mActivity?.addStore(store)
                     hideKeyboard()
                 }.start()
-                queue.take()?.let{
-                    Snackbar.make(mBinding.root,
-                        getString(R.string.edit_store_message_sucsess),
-                        Snackbar.LENGTH_SHORT).show()
 
+                queue.take()?.let {
+                    Toast.makeText(
+                        mActivity,
+                        R.string.edit_store_message_sucsess,
+                        Toast.LENGTH_SHORT
+                    ).show()
                     mActivity?.onBackPressedDispatcher?.onBackPressed()
                 }
                 true
@@ -84,7 +97,7 @@ class EditStoreFragment : Fragment() {
     private fun hideKeyboard() {
         val imm = mActivity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         //se oculta teclado
-            imm.hideSoftInputFromWindow(requireView().windowToken, 0)
+        imm.hideSoftInputFromWindow(requireView().windowToken, 0)
     }
 
     override fun onDestroyView() {

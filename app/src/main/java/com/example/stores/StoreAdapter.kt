@@ -17,8 +17,6 @@ class StoreAdapter (private var stores: MutableList<StoreEntity>, private var li
         //inflar vista
         val view = LayoutInflater.from(mContext).inflate(R.layout.item_store, parent, false)
 
-
-
         return ViewHolder(view)
     }
 
@@ -59,12 +57,11 @@ class StoreAdapter (private var stores: MutableList<StoreEntity>, private var li
     }
     fun delete(storeEntity: StoreEntity) {
         //averiguar index de la store
-        val index =  stores.indexOf(storeEntity)
-        if (index != -1) {
+        val index = stores.indexOf(storeEntity)
+        if (index != -1){
             stores.removeAt(index)
             notifyItemRemoved(index)
         }
-
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view){
