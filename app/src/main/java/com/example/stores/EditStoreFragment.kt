@@ -15,12 +15,14 @@ import androidx.core.widget.addTextChangedListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.stores.databinding.FragmentEditStoreBinding
+import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.LinkedBlockingQueue
 
 class EditStoreFragment : Fragment() {
     private lateinit var mBinding: FragmentEditStoreBinding
     private var mActivity: MainActivity? = null
     private var mStoreEntity: StoreEntity? = null
+    private var mIsEditMode: Boolean = false
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View?
@@ -35,7 +37,8 @@ class EditStoreFragment : Fragment() {
 
         val id = arguments?.getLong(getString(R.string.arg_id), 0)
         if (id != null && id != 0L) {
-            Toast.makeText(activity, id.toString(), Toast.LENGTH_SHORT).show()
+            mIsEditMode = true
+            getStore(id)
         }else {
             Toast.makeText(activity, id.toString(), Toast.LENGTH_SHORT).show()
         }
@@ -57,6 +60,29 @@ class EditStoreFragment : Fragment() {
                 .diskCacheStrategy(DiskCacheStrategy.ALL) //config cache
                 .centerCrop()
                 .into(mBinding.imgPhoto)
+        }
+    }
+
+    private fun getStore(id: Long) {
+        val queue = LinkedBlockingQueue<StoreEntity?>()
+        Thread{
+            mStoreEntity = StoreApplication.database.storeDao().getStoreById(id)
+            queue.add(mStoreEntity)
+        }.start()
+        queue.take()?.let{ setUiStore(it) }
+    }
+
+    private fun setUiStore(storeEntity: StoreEntity) {
+        with(mBinding){
+            edName.setText(storeEntity.name)
+            edPhone.setText(storeEntity.phone)
+            edWebSite.setText(storeEntity.webSite)
+            edPhotoUrl.setText(storeEntity.photoUrl)
+            Glide.with(activity!!)
+                .load(storeEntity.photoUrl)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .centerCrop()
+                .into(imgPhoto)
         }
     }
 
